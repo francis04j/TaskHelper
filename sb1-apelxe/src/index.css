@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans text-text bg-background;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold text-secondary;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-accent transition duration-300;
+  }
+  .btn-secondary {
+    @apply bg-white text-primary border border-primary px-6 py-2 rounded-full font-semibold hover:bg-primary hover:text-white transition duration-300;
+  }
+}
+
+/* Leaflet styles */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}
