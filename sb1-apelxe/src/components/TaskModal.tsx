@@ -1,6 +1,11 @@
 import React from 'react';
 import { X, MapPin, Clock, DollarSign, User, AlertCircle, CheckCircle } from 'lucide-react';
 
+
+
+
+
+
 interface TaskModalProps {
   task: any;
   onClose: () => void;
