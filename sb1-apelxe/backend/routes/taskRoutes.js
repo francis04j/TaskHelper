@@ -1,103 +1,53 @@
 import express from 'express';
-import { PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
-import docClient from '../config/dynamodb.js';
-import Task from '../models/Task.js';
+import db from '../config/inMemoryDb.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
 
 // Get all tasks
-router.get('/', async (req, res) => {
-  try {
-    const command = new QueryCommand({
-      TableName: Task.tableName,
-      IndexName: "StatusIndex",
-      KeyConditionExpression: "#status = :status",
-      ExpressionAttributeNames: {
-        "#status": "status",
-      },
-      ExpressionAttributeValues: {
-        ":status": "open",
-      },
-    });
-    const { Items } = await docClient.send(command);
-    res.json(Items);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+router.get('/', (req, res) => {
+  res.json(db.tasks);
 });
 
 // Get a specific task
-router.get('/:id', async (req, res) => {
-  try {
-    const command = new GetCommand({
-      TableName: Task.tableName,
-      Key: { id: req.params.id },
-    });
-    const { Item } = await docClient.send(command);
-    if (!Item) return res.status(404).json({ message: 'Task not found' });
-    res.json(Item);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+router.get('/:id', (req, res) => {
+  const task = db.tasks.find(task => task.id === req.params.id);
+  if (!task) return res.status(404).json({ message: 'Task not found' });
+  res.json(task);
 });
 
 // Create a new task
-router.post('/', async (req, res) => {
-  try {
-    const newTask = Task.create(req.body);
-    const command = new PutCommand({
-      TableName: Task.tableName,
-      Item: newTask,
-    });
-    await docClient.send(command);
-    res.status(201).json(newTask);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+router.post('/', (req, res) => {
+  const newTask = {
+    id: uuidv4(),
+    ...req.body,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  db.tasks.push(newTask);
+  res.status(201).json(newTask);
 });
 
 // Update a task
-router.patch('/:id', async (req, res) => {
-  try {
-    const { title, description, location, dueDate, budget, status } = req.body;
-    const command = new UpdateCommand({
-      TableName: Task.tableName,
-      Key: { id: req.params.id },
-      UpdateExpression: "set title = :title, description = :description, #loc = :location, dueDate = :dueDate, budget = :budget, #status = :status, updatedAt = :updatedAt",
-      ExpressionAttributeNames: {
-        "#loc": "location",
-        "#status": "status",
-      },
-      ExpressionAttributeValues: {
-        ":title": title,
-        ":description": description,
-        ":location": location,
-        ":dueDate": dueDate,
-        ":budget": budget,
-        ":status": status,
-        ":updatedAt": new Date().toISOString(),
-      },
-      ReturnValues: "ALL_NEW",
-    });
-    const { Attributes } = await docClient.send(command);
-    res.json(Attributes);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+router.patch('/:id', (req, res) => {
+  const index = db.tasks.findIndex(task => task.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Task not found' });
+
+  db.tasks[index] = {
+    ...db.tasks[index],
+    ...req.body,
+    updatedAt: new Date().toISOString(),
+  };
+  res.json(db.tasks[index]);
 });
 
 // Delete a task
-router.delete('/:id', async (req, res) => {
-  try {
-    const command = new DeleteCommand({
-      TableName: Task.tableName,
-      Key: { id: req.params.id },
-    });
-    await docClient.send(command);
-    res.json({ message: 'Task deleted' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+router.delete('/:id', (req, res) => {
+  const index = db.tasks.findIndex(task => task.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Task not found' });
+
+  db.tasks.splice(index, 1);
+  res.json({ message: 'Task deleted' });
 });
 
 export default router;

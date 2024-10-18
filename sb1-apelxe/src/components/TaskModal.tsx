@@ -1,10 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, MapPin, Clock, DollarSign, User, AlertCircle, CheckCircle } from 'lucide-react';
-
-
-
-
-
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface TaskModalProps {
   task: any;
@@ -12,6 +9,12 @@ interface TaskModalProps {
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [offerAmount, setOfferAmount] = useState('');
+  const [offerDescription, setOfferDescription] = useState('');
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'OPEN':
@@ -35,6 +38,25 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
         return 'Completed';
       default:
         return '';
+    }
+  };
+
+  const handleMakeOffer = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would typically send the offer to your backend API
+    console.log('Offer submitted:', { taskId: task.id, amount: offerAmount, description: offerDescription });
+    // Reset form and close it
+    setOfferAmount('');
+    setOfferDescription('');
+    setShowOfferForm(false);
+    onClose();
+  };
+
+  const handleMakeOfferClick = () => {
+    if (isAuthenticated) {
+      setShowOfferForm(true);
+    } else {
+      navigate('/signup');
     }
   };
 
@@ -83,9 +105,67 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
             <span className="text-accent">★ 4.8</span>
           </div>
         </div>
-        <button className="btn-primary w-full">
-          Make an Offer
-        </button>
+        {!showOfferForm ? (
+          <button 
+            className="btn-primary w-full"
+            onClick={handleMakeOfferClick}
+          >
+            Make an Offer
+          </button>
+        ) : (
+          <form onSubmit={handleMakeOffer} className="space-y-4">
+            <div>
+              <label htmlFor="offerAmount" className="block text-sm font-medium text-gray-700">Your offer</label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="number"
+                  name="offerAmount"
+                  id="offerAmount"
+                  className="focus:ring-primary focus:border-primary block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                  placeholder="0.00"
+                  value={offerAmount}
+                  onChange={(e) => setOfferAmount(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="offerDescription" className="block text-sm font-medium text-gray-700">
+                Describe your offer
+              </label>
+              <div className="mt-1">
+                <textarea
+                  id="offerDescription"
+                  name="offerDescription"
+                  rows={3}
+                  className="shadow-sm focus:ring-primary focus:border-primary mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
+                  placeholder="Tell the task poster why you're the best person for this job"
+                  value={offerDescription}
+                  onChange={(e) => setOfferDescription(e.target.value)}
+                  required
+                ></textarea>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                type="button"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                onClick={() => setShowOfferForm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              >
+                Submit Offer
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

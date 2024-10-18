@@ -1,28 +1,16 @@
 import express from 'express';
-import { QueryCommand } from "@aws-sdk/lib-dynamodb";
-import docClient from '../config/dynamodb.js';
-import Task from '../models/Task.js';
+import db from '../config/inMemoryDb.js';
 
 const router = express.Router();
 
 // Search tasks
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
   const { q } = req.query;
-  try {
-    const command = new QueryCommand({
-      TableName: Task.tableName,
-      IndexName: "TitleIndex",
-      KeyConditionExpression: "begins_with(title, :searchTerm)",
-      ExpressionAttributeValues: {
-        ":searchTerm": q,
-      },
-      Limit: 10,
-    });
-    const { Items } = await docClient.send(command);
-    res.json(Items);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const searchResults = db.tasks.filter(task =>
+    task.title.toLowerCase().includes(q.toLowerCase()) ||
+    task.description.toLowerCase().includes(q.toLowerCase())
+  );
+  res.json(searchResults);
 });
 
 export default router;

@@ -1,24 +1,25 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5001/api';
 
 const api = axios.create({
   baseURL: API_URL,
+ // withCredentials: true, // This line is important for CORS with credentials
 });
 
 // Add a request interceptor to include the token in the headers
-api.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
+// api.interceptors.request.use(
+//     (config) => {
+//       const token = localStorage.getItem('token');
+//       if (token) {
+//         config.headers['Authorization'] = `Bearer ${token}`;
+//       }
+//       return config;
+//     },
+//     (error) => {
+//       return Promise.reject(error);
+//     }
+//   );
 
 export const searchTasks = async (query: string) => {
   const response = await api.get(`/search?q=${query}`);

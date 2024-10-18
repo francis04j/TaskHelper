@@ -1,74 +1,79 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, List, PlusCircle, User, LogOut } from 'lucide-react';
-import AuthModal from './AuthModal';
+import { Menu, X, User, LogOut, Search, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Header: React.FC = () => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'signup' | 'login'>('signup');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
 
-  const openAuthModal = (mode: 'signup' | 'login') => {
-    setAuthMode(mode);
-    setIsAuthModalOpen(true);
-  };
-
   return (
-    <header className="bg-white shadow-md">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold text-primary flex items-center">
-          <Home className="mr-2" />
-          TaskMaster
-        </Link>
-        <nav className="flex items-center">
-          <ul className="flex space-x-6 mr-6">
-            <li>
-              <Link to="/tasks" className="flex items-center text-text-light hover:text-primary">
-                <List className="mr-1" size={18} />
-                Find Work
-              </Link>
-            </li>
-            <li>
-              <Link to="/create-task" className="flex items-center text-text-light hover:text-primary">
-                <PlusCircle className="mr-1" size={18} />
-                Post a Job
-              </Link>
-            </li>
-          </ul>
-          {isAuthenticated ? (
-            <div className="flex items-center space-x-4">
-              <Link to="/profile" className="flex items-center text-text-light hover:text-primary">
-                <User className="mr-1" size={18} />
-                {user?.name}
-              </Link>
-              <button
-                onClick={logout}
-                className="flex items-center text-text-light hover:text-primary"
-              >
-                <LogOut className="mr-1" size={18} />
-                Logout
-              </button>
-            </div>
-          ) : (
-            <div className="flex space-x-2">
-              <button
-                onClick={() => openAuthModal('login')}
-                className="px-4 py-2 text-primary border border-primary rounded hover:bg-primary hover:text-white transition-colors"
-              >
-                Log in
-              </button>
-              <button
-                onClick={() => openAuthModal('signup')}
-                className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition-colors"
-              >
-                Sign up
-              </button>
-            </div>
-          )}
-        </nav>
+    <header className="bg-primary text-white">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between py-4">
+          <Link to="/" className="text-2xl font-bold">
+            TaskMaster
+          </Link>
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link to="/tasks" className="hover:text-gray-200 transition-colors">Find Work</Link>
+            <Link to="/create-task" className="hover:text-gray-200 transition-colors">Post a Job</Link>
+            <Link to="/register-business" className="hover:text-gray-200 transition-colors">Register Business</Link>
+            <Link to="/why-register-business" className="hover:text-gray-200 transition-colors">Why Register?</Link>
+          </nav>
+          <div className="hidden md:flex items-center space-x-4">
+            <button className="hover:text-gray-200 transition-colors">
+              <Search size={20} />
+            </button>
+            <button className="hover:text-gray-200 transition-colors">
+              <ShoppingCart size={20} />
+            </button>
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile" className="hover:text-gray-200 transition-colors">
+                  <User size={20} />
+                </Link>
+                <button
+                  onClick={logout}
+                  className="hover:text-gray-200 transition-colors"
+                >
+                  <LogOut size={20} />
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="hover:text-gray-200 transition-colors">Log in</Link>
+            )}
+          </div>
+          <button
+            className="md:hidden text-white"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} mode={authMode} />
+      {isMenuOpen && (
+        <div className="md:hidden bg-primary py-4">
+          <nav className="flex flex-col items-center space-y-4">
+            <Link to="/tasks" className="text-white hover:text-gray-200 transition-colors">Find Work</Link>
+            <Link to="/create-task" className="text-white hover:text-gray-200 transition-colors">Post a Job</Link>
+            <Link to="/register-business" className="text-white hover:text-gray-200 transition-colors">Register Business</Link>
+            <Link to="/why-register-business" className="text-white hover:text-gray-200 transition-colors">Why Register?</Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile" className="text-white hover:text-gray-200 transition-colors">Profile</Link>
+                <button
+                  onClick={logout}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="text-white hover:text-gray-200 transition-colors">Log in</Link>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 };

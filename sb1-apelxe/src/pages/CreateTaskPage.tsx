@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
 import { createTask } from '../api';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,21 @@ const CreateTaskPage: React.FC = () => {
   const [budget, setBudget] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [dateOption, setDateOption] = useState('');
+  const [dateOption, setDateOption] = useState('');  
+  const [isLoading, setIsLoading] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Load Google Places API script
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places`;
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const steps = [
     { number: 1, name: 'Describe' },
@@ -78,6 +92,25 @@ const CreateTaskPage: React.FC = () => {
       case 'custom':
         setDueDate('');
         break;
+    }
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocation(value);
+
+    if (value.length > 2) {
+      const autocompleteService = new google.maps.places.AutocompleteService();
+      autocompleteService.getPlacePredictions(
+        { input: value },
+        (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setLocationSuggestions(predictions.map(p => p.description));
+          }
+        }
+      );
+    } else {
+      setLocationSuggestions([]);
     }
   };
 

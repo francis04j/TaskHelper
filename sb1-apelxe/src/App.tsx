@@ -7,6 +7,9 @@ import TaskListPage from './pages/TaskListPage';
 import TaskDetailPage from './pages/TaskDetailPage';
 import CreateTaskPage from './pages/CreateTaskPage';
 import ProfilePage from './pages/ProfilePage';
+import SignupPage from './pages/SignupPage';
+import RegisterBusinessPage from './pages/RegisterBusinessPage';
+import WhyRegisterBusinessPage from './pages/WhyRegisterBusiness';
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
@@ -22,6 +25,9 @@ function App() {
               <Route path="/tasks/:id" element={<TaskDetailPage />} />
               <Route path="/create-task" element={<CreateTaskPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/register-business" element={<RegisterBusinessPage />} />
+              <Route path="/why-register-business" element={<WhyRegisterBusinessPage />} />
             </Routes>
           </main>
           <Footer />

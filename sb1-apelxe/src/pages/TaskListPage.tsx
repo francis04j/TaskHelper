@@ -16,9 +16,9 @@ L.Icon.Default.mergeOptions({
 });
 
 const TaskListPage: React.FC = () => {
-  const [tasks, setTasks] = useState([
+  const defaultTasks = [
     {
-      _id: '1',
+      id: '1',
       title: 'House Cleaning',
       location: 'Sydney CBD',
       dueDate: '2023-06-15',
@@ -31,7 +31,7 @@ const TaskListPage: React.FC = () => {
       status: 'OPEN'
     },
     {
-      _id: '2',
+      id: '2',
       title: 'Furniture Assembly',
       location: 'Bondi Beach',
       dueDate: '2023-06-18',
@@ -44,7 +44,7 @@ const TaskListPage: React.FC = () => {
       status: 'ASSIGNED'
     },
     {
-      _id: '3',
+      id: '3',
       title: 'Grocery Delivery',
       location: 'Parramatta',
       dueDate: '2023-06-14',
@@ -57,7 +57,7 @@ const TaskListPage: React.FC = () => {
       status: 'COMPLETED'
     },
     {
-      _id: '4',
+      id: '4',
       title: 'Garden Maintenance',
       location: 'North Sydney',
       dueDate: '2023-06-20',
@@ -70,7 +70,7 @@ const TaskListPage: React.FC = () => {
       status: 'OPEN'
     },
     {
-      _id: '5',
+      id: '5',
       title: 'Dog Walking',
       location: 'Manly',
       dueDate: '2023-06-16',
@@ -82,7 +82,8 @@ const TaskListPage: React.FC = () => {
       taskeeId: 'taskee123',
       status: 'ASSIGNED'
     }
-  ]);
+  ]
+  const [tasks, setTasks] = useState(defaultTasks);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -114,23 +115,25 @@ const TaskListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBudget, setSelectedBudget] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        setLoading(true);
-        // Uncomment the following line when the API is ready
-        // const fetchedTasks = await getTasks();
-        // setTasks(fetchedTasks);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-        setLoading(false);
+        setIsLoading(true);
+        const fetchedTasks = await getTasks();
+        const totalTasks = [...defaultTasks, ...fetchedTasks]
+        setTasks(totalTasks);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error fetching tasks:', err);
+        setError('Failed to load tasks. Please try again later.');
+        setIsLoading(false);
       }
     };
 
-    // Uncomment the following line when the API is ready
-    // fetchTasks();
+    fetchTasks();
   }, []);
 
   const filteredTasks = tasks.filter((task: any) => {
@@ -200,7 +203,7 @@ const TaskListPage: React.FC = () => {
         <div className="md:w-1/2">
           <div className="space-y-4">
             {filteredTasks.map((task: any) => (
-              <div key={task._id} 
+              <div key={task.id} 
               onClick={() => setSelectedTask(task)}
               className="block bg-white rounded-lg shadow-md hover:shadow-lg transition duration-300">
                 <div className="p-6">
@@ -235,7 +238,7 @@ const TaskListPage: React.FC = () => {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
             {filteredTasks.map((task: any) => (
-              <Marker key={task._id} position={[task.lat, task.lng]}>
+              <Marker key={task.id} position={[task.lat, task.lng]}>
                 <Popup>
                   <h3>{task.title}</h3>
                   <p>{task.location}</p>

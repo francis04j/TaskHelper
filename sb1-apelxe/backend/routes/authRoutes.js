@@ -1,9 +1,8 @@
 import express from 'express';
-import { PutCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import docClient from '../config/dynamodb.js';
-import User from '../models/User.js';
+import db from '../config/inMemoryDb.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
 
@@ -13,12 +12,8 @@ router.post('/register', async (req, res) => {
     const { name, email, password, userType } = req.body;
 
     // Check if user already exists
-    const existingUser = await docClient.send(new GetCommand({
-      TableName: User.tableName,
-      Key: { email },
-    }));
-
-    if (existingUser.Item) {
+    const existingUser = db.users.find(user => user.email === email);
+    if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
@@ -27,14 +22,18 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create new user
-    const newUser = User.create({ name, email, password: hashedPassword, userType });
-    await docClient.send(new PutCommand({
-      TableName: User.tableName,
-      Item: newUser,
-    }));
+    const newUser = {
+      id: uuidv4(),
+      name,
+      email,
+      password: hashedPassword,
+      userType,
+      createdAt: new Date().toISOString(),
+    };
+    db.users.push(newUser);
 
     // Create and return JWT
-    const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = "random"; //jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ token, user: { id: newUser.id, name: newUser.name, email: newUser.email, userType: newUser.userType } });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -47,11 +46,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Check if user exists
-    const { Item: user } = await docClient.send(new GetCommand({
-      TableName: User.tableName,
-      Key: { email },
-    }));
-
+    const user = db.users.find(user => user.email === email);
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -63,7 +58,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Create and return JWT
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = "random"; //TODO:jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, userType: user.userType } });
   } catch (error) {
     res.status(500).json({ message: error.message });

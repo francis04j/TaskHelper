@@ -1,29 +1,99 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-primary: #ed0000;
+  --color-secondary: #4e4e4e;
+  --color-accent: #00a3e0;
+  --color-background: #ffffff;
+  --color-text: #2b2b2b;
+  --color-text-light: #6e6e6e;
+}
 
 @layer base {
   body {
     @apply font-sans text-text bg-background;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-secondary;
+    @apply font-bold text-text;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-accent transition duration-300;
+    @apply bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-opacity-90 transition duration-300;
   }
   .btn-secondary {
-    @apply bg-white text-primary border border-primary px-6 py-2 rounded-full font-semibold hover:bg-primary hover:text-white transition duration-300;
+    @apply bg-secondary text-white px-6 py-3 rounded-full font-semibold hover:bg-opacity-90 transition duration-300;
+  }
+  .btn-outline {
+    @apply bg-transparent border-2 border-primary text-primary px-6 py-3 rounded-full font-semibold hover:bg-primary hover:text-white transition duration-300;
   }
 }
 
-/* Leaflet styles */
-.leaflet-container {
-  width: 100%;
+/* Custom styles */
+.bg-gradient {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+/* Custom Slick Carousel Styles */
+.carousel-container {
+  position: relative;
+}
+
+.slick-slider,
+.slick-list,
+.slick-track,
+.slick-slide > div {
   height: 100%;
+}
+
+.slick-slide > div > div {
+  height: 100%;
+  display: flex !important;
+}
+
+.carousel-arrow {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.carousel-arrow:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.carousel-progress-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.carousel-progress-bar {
+  width: 60px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.carousel-progress-fill {
+  width: 0;
+  height: 100%;
+  background-color: white;
+  transition: width 5s linear;
+}
+
+.carousel-progress-bar.active .carousel-progress-fill {
+  width: 100%;
 }
