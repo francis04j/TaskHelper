@@ -6,14 +6,26 @@ const router = express.Router();
 
 // Get all tasks
 router.get('/', (req, res) => {
-  res.json(db.tasks);
+  const tasksWithDetails = db.tasks.map(task => {
+    const offers = db.offers.filter(offer => offer.taskId === task.id);
+    const questions = db.questions.filter(question => question.taskId === task.id);
+    return { ...task, offers, questions };
+  });
+  res.json(tasksWithDetails);
 });
 
 // Get a specific task
 router.get('/:id', (req, res) => {
   const task = db.tasks.find(task => task.id === req.params.id);
   if (!task) return res.status(404).json({ message: 'Task not found' });
-  res.json(task);
+  
+  const offers = db.offers.filter(offer => offer.taskId === task.id);
+  const questions = db.questions.filter(question => question.taskId === task.id).map(question => {
+    const replies = db.replies.filter(reply => reply.questionId === question.id);
+    return { ...question, replies };
+  });
+  
+  res.json({ ...task, offers, questions });
 });
 
 // Create a new task
@@ -28,26 +40,43 @@ router.post('/', (req, res) => {
   res.status(201).json(newTask);
 });
 
-// Update a task
-router.patch('/:id', (req, res) => {
-  const index = db.tasks.findIndex(task => task.id === req.params.id);
-  if (index === -1) return res.status(404).json({ message: 'Task not found' });
-
-  db.tasks[index] = {
-    ...db.tasks[index],
+// Create a new offer
+router.post('/:id/offers', (req, res) => {
+  const taskId = req.params.id;
+  const newOffer = {
+    id: uuidv4(),
+    taskId,
     ...req.body,
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
   };
-  res.json(db.tasks[index]);
+  db.offers.push(newOffer);
+  res.status(201).json(newOffer);
 });
 
-// Delete a task
-router.delete('/:id', (req, res) => {
-  const index = db.tasks.findIndex(task => task.id === req.params.id);
-  if (index === -1) return res.status(404).json({ message: 'Task not found' });
+// Create a new question
+router.post('/:id/questions', (req, res) => {
+  const taskId = req.params.id;
+  const newQuestion = {
+    id: uuidv4(),
+    taskId,
+    ...req.body,
+    createdAt: new Date().toISOString(),
+  };
+  db.questions.push(newQuestion);
+  res.status(201).json(newQuestion);
+});
 
-  db.tasks.splice(index, 1);
-  res.json({ message: 'Task deleted' });
+// Create a new reply
+router.post('/:taskId/questions/:questionId/replies', (req, res) => {
+  const questionId = req.params.questionId;
+  const newReply = {
+    id: uuidv4(),
+    questionId,
+    ...req.body,
+    createdAt: new Date().toISOString(),
+  };
+  db.replies.push(newReply);
+  res.status(201).json(newReply);
 });
 
 export default router;

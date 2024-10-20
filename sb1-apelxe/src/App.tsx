@@ -10,7 +10,10 @@ import ProfilePage from './pages/ProfilePage';
 import SignupPage from './pages/SignupPage';
 import RegisterBusinessPage from './pages/RegisterBusinessPage';
 import WhyRegisterBusinessPage from './pages/WhyRegisterBusiness';
+import AuthModal from './components/AuthModal';
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 import { AuthProvider } from './contexts/AuthContext';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
@@ -25,9 +28,11 @@ function App() {
               <Route path="/tasks/:id" element={<TaskDetailPage />} />
               <Route path="/create-task" element={<CreateTaskPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/signup" element={<SignupPage />} />
               <Route path="/register-business" element={<RegisterBusinessPage />} />
               <Route path="/why-register-business" element={<WhyRegisterBusinessPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/terms" element={<TermsAndConditionsPage />} />
             </Routes>
           </main>
           <Footer />

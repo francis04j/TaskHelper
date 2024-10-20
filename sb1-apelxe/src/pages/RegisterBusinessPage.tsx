@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ReactSearchAutocomplete } from 'react-search-autocomplete';
 
 const RegisterBusinessPage: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -16,7 +18,21 @@ const RegisterBusinessPage: React.FC = () => {
     country: '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const businessTypes = [
+    { id: 'cleaning', name: 'Cleaning' },
+    { id: 'handyman', name: 'Handyman' },
+    { id: 'gardening', name: 'Gardening' },
+    { id: 'moving', name: 'Moving' },
+    { id: 'petCare', name: 'Pet Care' },
+    { id: 'tutoring', name: 'Tutoring' },
+    { id: 'photography', name: 'Photography' },
+    { id: 'webDesign', name: 'Web Design' },
+    { id: 'personalTraining', name: 'Personal Training' },
+    { id: 'carWash', name: 'Car Wash' },
+    { id: 'other', name: 'Other' },
+  ];
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({
       ...prevData,
@@ -24,11 +40,16 @@ const RegisterBusinessPage: React.FC = () => {
     }));
   };
 
+  const handleBusinessTypeSelect = (item: any) => {
+    setFormData(prevData => ({
+      ...prevData,
+      businessType: item.name,
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
     console.log('Form submitted:', formData);
-    // For now, we'll just move to a thank you message
     setStep(3);
   };
 
@@ -56,22 +77,33 @@ const RegisterBusinessPage: React.FC = () => {
               <label htmlFor="businessType" className="block text-sm font-medium text-gray-700 mb-1">
                 Business Type
               </label>
-              <select
-                id="businessType"
-                name="businessType"
-                value={formData.businessType}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                required
-              >
-                <option value="">Select a business type</option>
-                <option value="cleaning">Cleaning</option>
-                <option value="handyman">Handyman</option>
-                <option value="gardening">Gardening</option>
-                <option value="moving">Moving</option>
-                <option value="petCare">Pet Care</option>
-                <option value="other">Other</option>
-              </select>
+              <ReactSearchAutocomplete
+                items={businessTypes}
+                onSelect={handleBusinessTypeSelect}
+                onSearch={() => {}}
+                onFocus={() => {}}
+                autoFocus
+                formatResult={(item) => (
+                  <span style={{ display: 'block', textAlign: 'left' }}>{item.name}</span>
+                )}
+                styling={{
+                  zIndex: 3,
+                  borderRadius: "4px",
+                  boxShadow: "none",
+                  backgroundColor: "white",
+                  border: "1px solid #d1d5db",
+                  hoverBackgroundColor: "#f3f4f6",
+                  color: "#111827",
+                  fontSize: "1rem",
+                  fontFamily: "inherit",
+                  iconColor: "#6b7280",
+                  lineColor: "#d1d5db",
+                  placeholderColor: "#6b7280",
+                  clearIconMargin: "3px 8px 0 0",
+                  searchIconMargin: "0 0 0 8px"
+                }}
+                placeholder="Select or type a business type"
+              />
             </div>
             <button
               type="button"

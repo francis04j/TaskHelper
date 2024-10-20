@@ -17,8 +17,7 @@ const Header: React.FC = () => {
           <nav className="hidden md:flex items-center space-x-6">
             <Link to="/tasks" className="hover:text-gray-200 transition-colors">Find Work</Link>
             <Link to="/create-task" className="hover:text-gray-200 transition-colors">Post a Job</Link>
-            <Link to="/register-business" className="hover:text-gray-200 transition-colors">Register Business</Link>
-            <Link to="/why-register-business" className="hover:text-gray-200 transition-colors">Why Register?</Link>
+            <Link to="/why-register-business" className="hover:text-gray-200 transition-colors">Register Business</Link>
           </nav>
           <div className="hidden md:flex items-center space-x-4">
             <button className="hover:text-gray-200 transition-colors">
@@ -40,7 +39,10 @@ const Header: React.FC = () => {
                 </button>
               </>
             ) : (
-              <Link to="/login" className="hover:text-gray-200 transition-colors">Log in</Link>
+              <>
+                <Link to="/login" className="hover:text-gray-200 transition-colors">Log in</Link>
+                <Link to="/signup" className="hover:text-gray-200 transition-colors">Sign up</Link>
+              </>
             )}
           </div>
           <button
@@ -56,8 +58,7 @@ const Header: React.FC = () => {
           <nav className="flex flex-col items-center space-y-4">
             <Link to="/tasks" className="text-white hover:text-gray-200 transition-colors">Find Work</Link>
             <Link to="/create-task" className="text-white hover:text-gray-200 transition-colors">Post a Job</Link>
-            <Link to="/register-business" className="text-white hover:text-gray-200 transition-colors">Register Business</Link>
-            <Link to="/why-register-business" className="text-white hover:text-gray-200 transition-colors">Why Register?</Link>
+            <Link to="/why-register-business" className="text-white hover:text-gray-200 transition-colors">Register Business</Link>
             {isAuthenticated ? (
               <>
                 <Link to="/profile" className="text-white hover:text-gray-200 transition-colors">Profile</Link>
@@ -69,7 +70,10 @@ const Header: React.FC = () => {
                 </button>
               </>
             ) : (
-              <Link to="/login" className="text-white hover:text-gray-200 transition-colors">Log in</Link>
+              <>
+                <Link to="/login" className="text-white hover:text-gray-200 transition-colors">Log in</Link>
+                <Link to="/signup" className="text-white hover:text-gray-200 transition-colors">Sign up</Link>
+              </>
             )}
           </nav>
         </div>

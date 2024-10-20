@@ -25,12 +25,19 @@ router.patch('/:id', (req, res) => {
   const index = db.users.findIndex(user => user.id === req.params.id);
   if (index === -1) return res.status(404).json({ message: 'User not found' });
 
-  db.users[index] = {
+  const updatedUser = {
     ...db.users[index],
     ...req.body,
     updatedAt: new Date().toISOString(),
   };
-  const { password, ...userWithoutPassword } = db.users[index];
+
+  // Ensure that sensitive information is not overwritten
+  delete updatedUser.password;
+
+  db.users[index] = updatedUser;
+  
+  // Remove sensitive information before sending the response
+  const { password, ...userWithoutPassword } = updatedUser;
   res.json(userWithoutPassword);
 });
 
@@ -42,5 +49,7 @@ router.delete('/:id', (req, res) => {
   db.users.splice(index, 1);
   res.json({ message: 'User deleted' });
 });
+
+
 
 export default router;

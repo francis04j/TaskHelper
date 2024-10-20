@@ -15,7 +15,10 @@ const WhyRegisterBusinessPage: React.FC = () => {
             "Increase your bookings",
             "Manage your calendar and availability",
             "Receive secure online payments",
-            "Build your online reputation"
+            "Build your online reputation",
+            "Get immediate notification for related task",
+            "Your reply is priotised",
+            "Dedicated page"
           ].map((item, index) => (
             <li key={index} className="flex items-start">
               <CheckCircle className="text-primary mr-2 mt-1 flex-shrink-0" />
