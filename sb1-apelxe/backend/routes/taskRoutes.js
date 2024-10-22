@@ -6,11 +6,14 @@ const router = express.Router();
 
 // Get all tasks
 router.get('/', (req, res) => {
-  const tasksWithDetails = db.tasks.map(task => {
-    const offers = db.offers.filter(offer => offer.taskId === task.id);
-    const questions = db.questions.filter(question => question.taskId === task.id);
-    return { ...task, offers, questions };
-  });
+  const tasksWithDetails = db.tasks;
+  //db.tasks.map(task => {
+   // const offers = db.offers.filter(offer => offer.taskId === task.id);
+   // const questions = db.questions.filter(question => question.taskId === task.id);
+    //return { ...task, offers, questions };
+    
+  //});
+  console.log('tasksWithDetails', tasksWithDetails)
   res.json(tasksWithDetails);
 });
 
@@ -30,16 +33,47 @@ router.get('/:id', (req, res) => {
 
 // Create a new task
 router.post('/', (req, res) => {
+  const { title, description, location, dueDate, budget, isOnline } = req.body;
+  console.log('POSTER', poster)
+  // Validate required fields
+  if (!title) {
+    return res.status(400).json({ message: 'Missing required fields title' });
+  }
+
+  if (isOnline == false && !location) {
+    return res.status(400).json({ message: 'Missing required field: Location' });
+  }
+
+  if (!dueDate ) {
+    return res.status(400).json({ message: 'Missing required field: DueDate' });
+  }
+
+  if (!budget) {
+    return res.status(400).json({ message: 'Missing required field: Budget' });
+  }
+
   const newTask = {
     id: uuidv4(),
-    ...req.body,
+    title,
+    description,
+    location,
+    lat: req.body.lat? parseFloat(req.body.lat) : null,
+    lng: req.body.lng? parseFloat(req.body.lng) : null,
+    dueDate,
+    budget: parseFloat(budget),
+    isOnline: isOnline === 'true',
+    images: req.files,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    status: 'OPEN',
+    poster: req.poster,
+    offers: [],
+    questions: []
   };
+
   db.tasks.push(newTask);
   res.status(201).json(newTask);
 });
-
 // Create a new offer
 router.post('/:id/offers', (req, res) => {
   const taskId = req.params.id;

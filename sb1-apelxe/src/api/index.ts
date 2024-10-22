@@ -43,6 +43,7 @@ export const getTask = async (id: string) => {
 
 export const createTask = async (taskData: any) => {
   try {
+    console.log('taskData', taskData)
     const response = await api.post('/tasks', taskData);
     return response.data;
   } catch (error) {
@@ -90,5 +91,16 @@ export const searchTasks = async (query: string) => {
     throw error;
   }
 };
+
+// Mock S3 upload function
+export const uploadImage = async (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const mockS3Url = `https://mock-s3-bucket.s3.amazonaws.com/${file.name}`;
+      resolve(mockS3Url);
+    }, 1000); // Simulate a 1-second upload delay
+  });
+};
+
 
 export default api;

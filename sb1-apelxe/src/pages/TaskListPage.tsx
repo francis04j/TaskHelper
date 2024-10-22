@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import TaskDetails from '../components/TaskDetails';
+import { Task } from '../types/Task';
 
 // Fix for default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -13,44 +14,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
 });
-
-interface TaskMasterUser {
-  id: string;
-  name: string;
-  // Add other user properties as needed
-}
-
-interface Reply {
-  id: string;
-  text: string;
-  createdAt: Date;
-  createdBy: TaskMasterUser;
-  isAccepted?: boolean;
-}
-
-interface Question {
-  id: string;
-  text: string;
-  createdAt: Date;
-  askedBy: TaskMasterUser;
-  replies: Reply[];
-}
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  location: string;
-  lat: number;
-  lng: number;
-  dueDate: string;
-  budget: number;
-  status: 'OPEN' | 'ASSIGNED' | 'COMPLETED';
-  category: string;
-  poster: TaskMasterUser,
-  offers: any[];
-  questions: Question[];
-}
 
 const TaskListPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -204,7 +167,7 @@ const TaskListPage: React.FC = () => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
               {filteredTasks.map((task) => (
-                <Marker key={task.id} position={[task.lat, task.lng]}>
+                <Marker key={task.id} position={[51.509865, -0.128005]}>
                   <Popup>
                     <h3>{task.title}</h3>
                     <p>{task.location}</p>

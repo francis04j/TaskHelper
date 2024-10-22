@@ -45,7 +45,7 @@ const db = {
   ],
   tasks: [
     {
-      id: uuidv4(),
+      id: 'd5b4ae70-c5b8-42f3-a141-c48f19904037',
       title: 'House Cleaning in Central London',
       description: 'Need a thorough house cleaning for a 2-bedroom flat in Central London.',
       location: 'Central London',
@@ -55,16 +55,23 @@ const db = {
       budget: 80,
       status: 'OPEN',
       category: 'Cleaning',
-      poster: { id: 'e72a838e-385e-411d-a37e-30f0c252ff56', name: 'John Doe' },
+      poster: 'e72a838e-385e-411d-a37e-30f0c252ff56',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       offers: [
         {
           id: uuidv4(),
+          taskId: '5b4ae70-c5b8-42f3-a141-c48f19904037',
           amount: 75,
-          description: 'I can do a thorough cleaning of your flat within 4 hours.',
-          userId: '28037931-4868-4405-b631-916c9a28384c',
-        },
+          description: "I can fix this today. I have all the necessary tools and 5 years of plumbing experience.",
+          createdAt: "2023-05-15T11:30:00.000Z",
+          status: "pending",
+          user: {
+            id: "28037931-4868-4405-b631-916c9a28384c",
+            name: "Sarah Johnson",
+            profilePicture: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop"
+          }
+        }
       ],
       questions: [
         {
@@ -82,7 +89,7 @@ const db = {
       ],
     },
     {
-      id: uuidv4(),
+      id: '28037931-4868-4405-b631-916c9a28384c',
       title: 'Garden Maintenance in North London',
       description: 'Looking for someone to mow the lawn and trim hedges in my backyard.',
       location: 'North London',
@@ -92,10 +99,24 @@ const db = {
       budget: 60,
       status: 'OPEN',
       category: 'Gardening',
-      poster: { id: 'e72a838e-385e-411d-a37e-30f0c252ff56', name: 'John Doe' },
+      poster: 'e72a838e-385e-411d-a37e-30f0c252ff56',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      offers: [],
+      offers: [
+        {
+          id: uuidv4(),
+          taskId: '28037931-4868-4405-b631-916c9a28384c',
+          amount: 90,
+          description: "I can do a deep clean of your apartment, including all rooms, bathroom, and kitchen. I bring my own cleaning supplies.",
+          createdAt: "2023-05-16T10:15:00.000Z",
+          status: "pending",
+          user: {
+            id: "e72a838e-385e-411d-a37e-30f0c252ff56",
+            name: "John Smith",
+            profilePicture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop"
+          }
+        }
+      ],
       questions: [
         {
           id: uuidv4(),
@@ -116,23 +137,10 @@ const db = {
       budget: 100,
       status: 'OPEN',
       category: 'Handyman',
-      poster: { id: 'e72a838e-385e-411d-a37e-30f0c252ff56', name: 'John Doe' },
+      poster: 'e72a838e-385e-411d-a37e-30f0c252ff56',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      offers: [
-        {
-          id: uuidv4(),
-          amount: 90,
-          description: 'I amm experienced in IKEA furniture assembly and can complete this task efficiently.',
-          userId: '28037931-4868-4405-b631-916c9a28384c',
-        },
-        {
-          id: uuidv4(),
-          amount: 110,
-          description: 'I can assemble your furniture and also help with any adjustments or modifications if needed.',
-          userId: '28037931-4868-4405-b631-916c9a28384c',
-        },
-      ],
+      offers: [],
       questions: [],
     },
     {
@@ -146,10 +154,35 @@ const db = {
       budget: 50,
       status: 'OPEN',
       category: 'Pet Care',
-      poster: { id: 'e72a838e-385e-411d-a37e-30f0c252ff56', name: 'John Doe' },
+      poster: 'e72a838e-385e-411d-a37e-30f0c252ff56',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      offers: [],
+      offers: [
+        {
+          id: uuidv4(),
+          amount: 450,
+          description: "I specialize in creating beautiful, responsive websites for small businesses. I can have this completed within 2 weeks.",
+          createdAt: "2023-05-17T15:20:00.000Z",
+          status: "accepted",
+          user: {
+            id: "28037931-4868-4405-b631-916c9a28384c",
+            name: "Sarah Johnson",
+            profilePicture: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop"
+          }
+        },
+        {
+          id: uuidv4(),
+          amount: 480,
+          description: "I can create a modern, SEO-optimized website for your bakery with all the features you need.",
+          createdAt: "2023-05-17T16:45:00.000Z",
+          status: "rejected",
+          user: {
+            id: "e72a838e-385e-411d-a37e-30f0c252ff56",
+            name: "John Smith",
+            profilePicture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop"
+          }
+        }
+      ],
       questions: [
         {
           id: uuidv4(),
@@ -188,17 +221,10 @@ const db = {
       budget: 500,
       status: 'OPEN',
       category: 'Web Design',
-      poster: { id: 'e72a838e-385e-411d-a37e-30f0c252ff56', name: 'John Doe' },
+      poster: 'e72a838e-385e-411d-a37e-30f0c252ff56',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      offers: [
-        {
-          id: uuidv4(),
-          amount: 450,
-          description: 'I can design a beautiful and responsive website for your bakery using modern web technologies.',
-          userId: '28037931-4868-4405-b631-916c9a28384c',
-        },
-      ],
+      offers: [],
       questions: [
         {
           id: uuidv4(),

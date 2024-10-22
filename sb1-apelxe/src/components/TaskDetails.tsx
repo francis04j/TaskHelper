@@ -1,50 +1,13 @@
 import React, { useState } from 'react';
 import { X, MapPin, Clock, DollarSign, User, AlertCircle, CheckCircle, MessageSquare } from 'lucide-react';
-import ProfileCompletionModal from './ProfileCompletionModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
-
-interface TaskMasterUser {
-  id: string;
-  name: string;
-  // Add other user properties as needed
-}
-
-interface Reply {
-  id: string;
-  text: string;
-  createdAt: Date;
-  createdBy: TaskMasterUser;
-  isAccepted?: boolean;
-}
-
-interface Question {
-  id: string;
-  text: string;
-  createdAt: Date;
-  askedBy: TaskMasterUser;
-  replies: Reply[];
-}
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  location: string;
-  lat: number;
-  lng: number;
-  dueDate: string;
-  budget: number;
-  status: 'OPEN' | 'ASSIGNED' | 'COMPLETED';
-  category: string;
-  poster: TaskMasterUser;
-  offers: any[];
-  questions: Question[];
-}
+import ProfileCompletionModal from './ProfileCompletionModal';
+import { Offer } from '../types/Offer';
 
 interface TaskDetailsProps {
-  task: Task;
+  task: any;
   onClose: () => void;
 }
 
@@ -55,63 +18,38 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
   const [offerDescription, setOfferDescription] = useState('');
   const [questionText, setQuestionText] = useState('');
   const [replyText, setReplyText] = useState('');
+  const [showProfileCompletionModal, setShowProfileCompletionModal] = useState(false);
   const { user, isAuthenticated, updateUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [showProfileCompletionModal, setShowProfileCompletionModal] = useState(false);
-
-
   const handleMakeOffer = () => {
-    if (isAuthenticated) {
-      if (userHasCompleteProfile()) {
-        setActiveTab('offers');
-        setShowOfferForm(true);
-      } else {
-        setShowProfileCompletionModal(true);
-      }
-    } else {
+    if (!isAuthenticated) {
       navigate('/signup', { state: { referrer: location.pathname } });
+      return;
     }
-  };
 
-  const userHasCompleteProfile = () => {
-    return (
-      user &&
-      user.profilePicture &&
-      user.dateOfBirth &&
-      user.mobileNumber &&
-      user.bankAccount &&
-      user.billingAddress
-    );
-  };
-
-  const handleProfileCompletion = async (updatedUserData: any) => {
-  
-
-    // Update the user in the in-memory database
-    const response = await api.patch(`/users/${user?.id}`, updatedUserData);
-    const updatedUser = response.data;
-
-    // Update the user context
-    updateUser(updatedUser);
-    console.log('Updated user:', updatedUser);
-    setShowProfileCompletionModal(false);
-    setActiveTab('offers');
-    setShowOfferForm(true);
+    if (user && (!user.profilePicture || !user.dateOfBirth || !user.mobileNumber || !user.bankAccount || !user.billingAddress)) {
+      setShowProfileCompletionModal(true);
+    } else {
+      setActiveTab('offers');
+      setShowOfferForm(true);
+    }
   };
 
   const handleSubmitOffer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+
     try {
       const newOffer = await api.post(`/tasks/${task.id}/offers`, {
         amount: parseFloat(offerAmount),
         description: offerDescription,
-        userId: user?.id,
+        userId: user.id,
       });
       console.log('Offer submitted:', newOffer);
       // Update the task with the new offer
-      task.offers.push(newOffer);
+      task.offers.push(newOffer.data);
       setOfferAmount('');
       setOfferDescription('');
       setShowOfferForm(false);
@@ -122,27 +60,17 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
 
   const handleSubmitQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+
     try {
-        const response = await api.post(`/tasks/${task.id}/questions`, {
-            text: questionText,
-            userId: user?.id,
-          });
-    
-          const newQuestion: Question = {
-            id: response.data.id,
-            text: response.data.text,
-            createdAt: new Date(response.data.createdAt),
-            askedBy: {
-              id: user?.id || '',
-              name: user?.name || 'Anonymous',
-            },
-            replies: [],
-          };
-    
-          console.log('Question submitted:', newQuestion);
-          // Update the task with the new question
-          task.questions.push(newQuestion);
-          setQuestionText('');
+      const newQuestion = await api.post(`/tasks/${task.id}/questions`, {
+        text: questionText,
+        userId: user.id,
+      });
+      console.log('Question submitted:', newQuestion);
+      // Update the task with the new question
+      task.questions.push(newQuestion.data);
+      setQuestionText('');
     } catch (error) {
       console.error('Error submitting question:', error);
     }
@@ -150,34 +78,80 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
 
   const handleSubmitReply = async (e: React.FormEvent, questionId: string) => {
     e.preventDefault();
+    if (!user) return;
+
     try {
-      const response = await api.post(`/tasks/${task.id}/questions/${questionId}/replies`, {
+      const newReply = await api.post(`/tasks/${task.id}/questions/${questionId}/replies`, {
         text: replyText,
-        userId: user?.id,
+        userId: user.id,
       });
-
-      const newReply: Reply = {
-        id: response.data.id,
-        text: response.data.text,
-        createdAt: new Date(response.data.createdAt),
-        createdBy: {
-          id: user?.id || '',
-          name: user?.name || 'Anonymous',
-        },
-        isAccepted: false, // Assuming new replies are not accepted by default
-      };
-
       console.log('Reply submitted:', newReply);
       // Update the task with the new reply
-      const updatedQuestions = task.questions.map((q) =>
-        q.id === questionId
-          ? { ...q, replies: Array.isArray(q.replies) ? [...q.replies, newReply] : [newReply] }
-          : q
+      const updatedQuestions = task.questions.map((q: any) =>
+        q.id === questionId ? { ...q, replies: [...(q.replies || []), newReply.data] } : q
       );
       task.questions = updatedQuestions;
       setReplyText('');
     } catch (error) {
       console.error('Error submitting reply:', error);
+    }
+  };
+
+  const handleProfileCompletion = async (updatedUserData: any) => {
+    try {
+      // Update the user in the in-memory database
+      const response = await api.patch(`/users/${user?.id}`, updatedUserData);
+      const updatedUser = response.data;
+
+      // Update the user context
+      updateUser(updatedUser);
+
+      console.log('User profile updated:', updatedUser);
+      setShowProfileCompletionModal(false);
+      setActiveTab('offers');
+      setShowOfferForm(true);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      // Handle the error (e.g., show an error message to the user)
+    }
+  };
+
+  const handleAcceptOffer = async (offerId: string) => {
+    try {
+      await api.post(`/tasks/${task.id}/offers/${offerId}/accept`);
+      // Update the local task state to reflect the accepted offer
+      const updatedOffers = task.offers.map((offer: Offer) => ({
+        ...offer,
+        status: offer.id === offerId ? 'accepted' : 'rejected'
+      }));
+      task.offers = updatedOffers;
+      task.status = 'ASSIGNED';
+      // Force a re-render
+      setActiveTab('offers');
+    } catch (error) {
+      console.error('Error accepting offer:', error);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return 'just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
     }
   };
 
@@ -208,23 +182,14 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto relative">
+    <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto relative">
+      <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+        <X size={24} />
+      </button>
 
-    {showProfileCompletionModal && (
-        <ProfileCompletionModal
-          user={user}
-          onComplete={handleProfileCompletion}
-          onClose={() => setShowProfileCompletionModal(false)}
-        />
-      )}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">{task.title}</h2>
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-          <X size={24} />
-        </button>
-      </div>
+      <h2 className="text-2xl font-bold mb-4">{task.title}</h2>
 
-      <div className="flex space-x-4 mb-6">
+       <div className="flex space-x-4 mb-6">
         <button
           className={`px-4 py-2 rounded-full ${activeTab === 'details' ? 'bg-primary text-white' : 'bg-gray-200'}`}
           onClick={() => setActiveTab('details')}
@@ -244,7 +209,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
           Questions ({task.questions.length})
         </button>
       </div>
-
+    
       {activeTab === 'details' && (
         <div>
           <div className="flex items-center mb-4">
@@ -252,11 +217,12 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
             <span className="ml-2 font-medium">{getStatusText(task.status)}</span>
           </div>
           <p className="mb-4">{task.description}</p>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="flex items-center">
               <MapPin size={18} className="mr-2 text-primary" />
               <span>{task.location}</span>
             </div>
+          
             <div className="flex items-center">
               <Clock size={18} className="mr-2 text-primary" />
               <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
@@ -265,20 +231,22 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
               <DollarSign size={18} className="mr-2 text-primary" />
               <span>Budget: ${task.budget}</span>
             </div>
-            <div className="flex items-center">
-              <User size={18} className="mr-2 text-primary" />
-              <span>Posted by: {task.poster.name}</span>
-            </div>
-          </div>
-          {user && user.id !== task.poster.id && (
+            {task.poster && (
+              <div className="flex items-center">
+                <User size={18} className="mr-2 text-primary" />
+                <span>Posted by: FIXtask.poster</span>
+              </div>
+            )}
+          </div> 
+          {user && user.id !== task.poster && (
             <button onClick={handleMakeOffer} className="btn-primary">
               Make an Offer
             </button>
           )}
         </div>
-      )}
+      )} 
 
-      {activeTab === 'offers' && (
+       {activeTab === 'offers' && (
         <div>
           {showOfferForm ? (
             <form onSubmit={handleSubmitOffer} className="space-y-4">
@@ -316,12 +284,47 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
             <div>
               <h3 className="text-xl font-semibold mb-4">Offers</h3>
               {task.offers.length > 0 ? (
-                task.offers.map((offer: any) => (
-                  <div key={offer.id} className="bg-gray-100 rounded-lg p-4 mb-4">
-                    <p className="font-semibold">${offer.amount}</p>
-                    <p>{offer.description}</p>
-                  </div>
-                ))
+                <div className="space-y-4">
+                  {task.offers.map((offer: Offer) => (
+                    <div key={offer.id} className="bg-gray-100 rounded-lg p-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0">
+                          <img
+                            src={offer.user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(offer.user.name)}&background=random`}
+                            alt={offer.user.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-grow">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-semibold text-lg">{offer.user.name}</h4>
+                              <p className="text-sm text-gray-500">{formatDate(offer.createdAt)}</p>
+                            </div>
+                            <div className="text-xl font-bold text-primary">
+                              ${offer.amount}
+                            </div>
+                          </div>
+                          <p className="mt-2 text-gray-700">{offer.description}</p>
+                          {user && user.id === task.poster && task.status === 'OPEN' && offer.status === 'pending' && (
+                            <button
+                              onClick={() => handleAcceptOffer(offer.id)}
+                              className="mt-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                              Accept Offer
+                            </button>
+                          )}
+                          {offer.status === 'accepted' && (
+                            <div className="mt-2 flex items-center text-green-600">
+                              <CheckCircle size={16} className="mr-1" />
+                              <span className="text-sm font-medium">Accepted</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <p>No offers yet.</p>
               )}
@@ -333,10 +336,10 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
       {activeTab === 'questions' && (
         <div>
           <h3 className="text-xl font-semibold mb-4">Questions</h3>
-          {task.questions.map((question: Question) => (
+          {task.questions.map((question: any) => (
             <div key={question.id} className="bg-gray-100 rounded-lg p-4 mb-4">
               <p className="font-semibold">{question.text}</p>
-              {question.replies && question.replies.map((reply: Reply) => (
+              {question.replies && question.replies.map((reply: any) => (
                 <div key={reply.id} className="ml-4 mt-2 p-2 bg-white rounded">
                   <p>{reply.text}</p>
                 </div>
@@ -368,6 +371,14 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
             </button>
           </form>
         </div>
+      )}
+
+      {showProfileCompletionModal && user && (
+        <ProfileCompletionModal
+          user={user}
+          onComplete={handleProfileCompletion}
+          onClose={() => setShowProfileCompletionModal(false)}
+        />
       )}
     </div>
   );
