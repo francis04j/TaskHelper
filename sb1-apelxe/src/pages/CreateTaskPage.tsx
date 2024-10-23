@@ -40,6 +40,7 @@ const CreateTaskPage: React.FC = () => {
       dateOption,
       step
     };
+    console.log('saving pendingTask Data', taskData);
     localStorage.setItem('pendingTaskData', JSON.stringify(taskData));
   };
 
@@ -69,7 +70,7 @@ const CreateTaskPage: React.FC = () => {
       setDateOption(data.dateOption);
       setStep(data.step);
       setUploadedImageUrls(data.uploadedUrls);
-      
+      console.log('pendingTaskData', pendingTaskData)
       // Clear the stored data
       localStorage.removeItem('pendingTaskData');
       
@@ -143,11 +144,26 @@ const CreateTaskPage: React.FC = () => {
     setIsLoading(true);
 
     // Validate required fields
-    if (!title || !dueDate || !budget || (isOnline === false && !location) || isOnline === null) {
-      setError('Please fill in all required fields.');
-      setIsLoading(false);
-      return;
-    }
+  if (!title) {
+    setError('Missing required fields title');
+  }
+
+  if (isOnline == false && !location) {
+    setError('Missing required field: Location');
+  }
+
+  if (!dueDate ) {
+    setError('Missing required field: DueDate');
+  }
+
+  if (!budget) {
+    setError('Missing required field: Budget');
+  }
+
+  if (isOnline === null) {
+    setError('Missing required field: isOnline');
+  }
+
 
     try {
       // Upload images to mock S3
@@ -155,7 +171,7 @@ const CreateTaskPage: React.FC = () => {
         .filter((image): image is File => image !== null)
         .map(uploadImage);
       const uploadedUrls = await Promise.all(uploadPromises);
-      console.log('UPLOADED-URLS', uploadedImageUrls)
+      console.log('UPLOADED-URLS', uploadedUrls)
       setUploadedImageUrls(uploadedUrls);
 
       // If user is not authenticated, save data and redirect to signup
@@ -170,6 +186,38 @@ const CreateTaskPage: React.FC = () => {
       return;
     }
 
+    const pendingTaskData = localStorage.getItem('pendingTaskData');
+    if (pendingTaskData && user) {
+      const data = JSON.parse(pendingTaskData);
+      setTitle(data.title);
+      setDescription(data.description);
+      setLocation(data.location);
+      setIsOnline(data.isOnline);
+      setDueDate(data.dueDate);
+      setBudget(data.budget);
+      setDateOption(data.dateOption);
+      setStep(data.step);
+      setUploadedImageUrls(data.images);
+
+      const taskData = {
+       ...data,
+        location: data.isOnline ? 'ONLINE' : data.location,
+        lat: isOnline ? null : DEFAULT_LAT,
+        lng: isOnline ? null : DEFAULT_LNG,
+       
+        budget: parseFloat(data.budget),
+        images: data.images,
+        poster: user?.id,
+      };
+
+      // Clear the stored data
+      localStorage.removeItem('pendingTaskData');
+
+      console.log('Creating tasks:', taskData);
+      const newTask = await createTask(taskData);
+      console.log('Task created:', newTask);
+      navigate('/tasks');
+    }else if(user){
       const taskData = {
         title,
         description,
@@ -187,6 +235,9 @@ const CreateTaskPage: React.FC = () => {
       const newTask = await createTask(taskData);
       console.log('Task created:', newTask);
       navigate('/tasks');
+    }
+      
+     
     } catch (err) {
       console.error('Error creating task:', err);
       setError('Failed to create task. Please try again.');

@@ -34,7 +34,8 @@ router.get('/:id', (req, res) => {
 // Create a new task
 router.post('/', (req, res) => {
   const { title, description, location, dueDate, budget, isOnline } = req.body;
-  console.log('POSTER', poster)
+  console.log('IMAGWES', req.images)
+  console.log('POSTER', req.poster)
   // Validate required fields
   if (!title) {
     return res.status(400).json({ message: 'Missing required fields title' });
@@ -62,11 +63,11 @@ router.post('/', (req, res) => {
     dueDate,
     budget: parseFloat(budget),
     isOnline: isOnline === 'true',
-    images: req.files,
+    images: req.body.images,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     status: 'OPEN',
-    poster: req.poster,
+    poster: req.body.poster,
     offers: [],
     questions: []
   };

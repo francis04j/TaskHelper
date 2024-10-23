@@ -234,7 +234,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onClose }) => {
             {task.poster && (
               <div className="flex items-center">
                 <User size={18} className="mr-2 text-primary" />
-                <span>Posted by: FIXtask.poster</span>
+                <span>Posted by: ${task.poster}</span>
               </div>
             )}
           </div> 

@@ -4,6 +4,8 @@ const API_URL = 'http://localhost:5001/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  headers: { 'content-type': 'application/json' },
+  
  // withCredentials: true, // This line is important for CORS with credentials
 });
 
@@ -44,7 +46,7 @@ export const getTask = async (id: string) => {
 export const createTask = async (taskData: any) => {
   try {
     console.log('taskData', taskData)
-    const response = await api.post('/tasks', taskData);
+    const response = await api.post('/tasks', JSON.stringify(taskData));
     return response.data;
   } catch (error) {
     console.error('Error creating task:', error);
